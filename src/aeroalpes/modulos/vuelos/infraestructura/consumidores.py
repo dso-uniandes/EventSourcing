@@ -11,6 +11,7 @@ from aeroalpes.modulos.vuelos.infraestructura.schema.v1.comandos import ComandoC
 
 
 from aeroalpes.modulos.vuelos.infraestructura.proyecciones import ProyeccionReservasLista, ProyeccionReservasTotales
+from aeroalpes.modulos.vuelos.dominio.objetos_valor import EstadoReserva
 from aeroalpes.seedwork.infraestructura.proyecciones import ejecutar_proyeccion
 from aeroalpes.seedwork.infraestructura import utils
 
@@ -28,18 +29,19 @@ def suscribirse_a_eventos(app=None):
 
             tipo_evento = evento.type
             if tipo_evento == 'ReservaCreada':
-                operacion = ProyeccionReservasTotales.ADD
-            elif tipo_evento == 'ReservaCancelada':
-                operacion = ProyeccionReservasTotales.DELETE
-            elif tipo_evento in ('ReservaPagada', 'ReservaAprobada'):
-                operacion = ProyeccionReservasTotales.UPDATE
+                ejecutar_proyeccion(ProyeccionReservasTotales(datos.fecha_creacion, ProyeccionReservasTotales.ADD), app=app)
+                ejecutar_proyeccion(ProyeccionReservasLista(datos.id_reserva, datos.id_cliente, datos.estado, datos.fecha_creacion, datos.fecha_creacion), app=app)
+            elif tipo_evento in ('ReservaCancelada', 'ReservaPagada', 'ReservaAprobada'):
+                estados = {
+                    'ReservaCancelada': EstadoReserva.CANCELADA.name,
+                    'ReservaPagada': EstadoReserva.PAGADA.name,
+                    'ReservaAprobada': EstadoReserva.APROBADA.name,
+                }
+                ejecutar_proyeccion(ProyeccionReservasLista(datos.id_reserva, None, estados[tipo_evento], None, evento.time), app=app)
             else:
                 logging.warning(f'Tipo de evento no reconocido: {tipo_evento}')
                 consumidor.acknowledge(mensaje)
                 continue
-
-            ejecutar_proyeccion(ProyeccionReservasTotales(datos.fecha_creacion, operacion), app=app)
-            ejecutar_proyeccion(ProyeccionReservasLista(datos.id_reserva, datos.id_cliente, datos.estado, datos.fecha_creacion, datos.fecha_creacion), app=app)
             
             consumidor.acknowledge(mensaje)     
 

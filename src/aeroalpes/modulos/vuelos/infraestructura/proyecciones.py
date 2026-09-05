@@ -48,8 +48,8 @@ class ProyeccionReservasLista(ProyeccionReserva):
         self.id_reserva = id_reserva
         self.id_cliente = id_cliente
         self.estado = estado
-        self.fecha_creacion = millis_a_datetime(fecha_creacion)
-        self.fecha_actualizacion = millis_a_datetime(fecha_actualizacion)
+        self.fecha_creacion = millis_a_datetime(fecha_creacion) if fecha_creacion else None
+        self.fecha_actualizacion = millis_a_datetime(fecha_actualizacion) if fecha_actualizacion else None
     
     def ejecutar(self, db=None):
         if not db:
@@ -66,7 +66,7 @@ class ProyeccionReservasLista(ProyeccionReserva):
                 reserva_dto.estado = str(self.estado)
             if self.fecha_actualizacion:
                 reserva_dto.fecha_actualizacion = self.fecha_actualizacion
-        else:
+        elif self.fecha_creacion:
             # TODO Haga los cambios necesarios para que se consideren los itinerarios, demás entidades y asociaciones
             reserva = Reserva(
                 id=str(self.id_reserva),
