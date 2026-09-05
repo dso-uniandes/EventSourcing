@@ -22,11 +22,23 @@ def suscribirse_a_eventos(app=None):
 
         while True:
             mensaje = consumidor.receive()
-            datos = mensaje.value().data
+            evento = mensaje.value()
+            datos = evento.data
             print(f'Evento recibido: {datos}')
 
-            # TODO Identificar el tipo de CRUD del evento: Creacion, actualización o eliminación.
-            ejecutar_proyeccion(ProyeccionReservasTotales(datos.fecha_creacion, ProyeccionReservasTotales.ADD), app=app)
+            tipo_evento = evento.type
+            if tipo_evento == 'ReservaCreada':
+                operacion = ProyeccionReservasTotales.ADD
+            elif tipo_evento == 'ReservaCancelada':
+                operacion = ProyeccionReservasTotales.DELETE
+            elif tipo_evento in ('ReservaPagada', 'ReservaAprobada'):
+                operacion = ProyeccionReservasTotales.UPDATE
+            else:
+                logging.warning(f'Tipo de evento no reconocido: {tipo_evento}')
+                consumidor.acknowledge(mensaje)
+                continue
+
+            ejecutar_proyeccion(ProyeccionReservasTotales(datos.fecha_creacion, operacion), app=app)
             ejecutar_proyeccion(ProyeccionReservasLista(datos.id_reserva, datos.id_cliente, datos.estado, datos.fecha_creacion, datos.fecha_creacion), app=app)
             
             consumidor.acknowledge(mensaje)     
