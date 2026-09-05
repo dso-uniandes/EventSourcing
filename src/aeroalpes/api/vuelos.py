@@ -38,10 +38,14 @@ def reservar_usando_comando():
 @bp.route('/reserva', methods=('GET',))
 @bp.route('/reserva/<id>', methods=('GET',))
 def dar_reserva_usando_query(id=None):
-    if id:
-        query_resultado = ejecutar_query(ObtenerReserva(id))
-        map_reserva = MapeadorReservaDTOJson()
-        
-        return map_reserva.dto_a_externo(query_resultado.resultado)
-    else:
-        return [{'message': 'GET!'}]
+    estado = request.args.get('estado')
+    id_cliente = request.args.get('id_cliente')
+
+    query_resultado = ejecutar_query(ObtenerReserva(id=id, estado=estado, id_cliente=id_cliente))
+    map_reserva = MapeadorReservaDTOJson()
+    resultado = query_resultado.resultado
+
+    if isinstance(resultado, list):
+        return [map_reserva.dto_a_externo(reserva) for reserva in resultado]
+
+    return map_reserva.dto_a_externo(resultado) if resultado else {}
