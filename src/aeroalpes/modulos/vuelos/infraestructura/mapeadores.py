@@ -147,6 +147,8 @@ class MapeadorReserva(Mapeador):
         reserva_dto.fecha_creacion = entidad.fecha_creacion
         reserva_dto.fecha_actualizacion = entidad.fecha_actualizacion
         reserva_dto.id = str(entidad.id)
+        reserva_dto.id_cliente = str(entidad.id_cliente) if entidad.id_cliente else None
+        reserva_dto.estado = str(entidad.estado) if entidad.estado else None
 
         itinerarios_dto = list()
         

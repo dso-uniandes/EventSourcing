@@ -45,7 +45,7 @@ class ProyeccionReservasTotales(ProyeccionReserva):
 
 class ProyeccionReservasLista(ProyeccionReserva):
     def __init__(self, id_reserva, id_cliente, estado, fecha_creacion, fecha_actualizacion):
-        self.id_reserva = id
+        self.id_reserva = id_reserva
         self.id_cliente = id_cliente
         self.estado = estado
         self.fecha_creacion = millis_a_datetime(fecha_creacion)
@@ -58,19 +58,25 @@ class ProyeccionReservasLista(ProyeccionReserva):
         
         fabrica_repositorio = FabricaRepositorio()
         repositorio = fabrica_repositorio.crear_objeto(RepositorioReservas)
-        
-        # TODO Haga los cambios necesarios para que se consideren los itinerarios, demás entidades y asociaciones
-        repositorio.agregar(
-            Reserva(
-                id=str(self.id_reserva), 
-                id_cliente=str(self.id_cliente), 
-                estado=str(self.estado), 
-                fecha_creacion=self.fecha_creacion, 
-                fecha_actualizacion=self.fecha_actualizacion))
-        
-        # TODO ¿Y si la reserva ya existe y debemos actualizarla? Complete el método para hacer merge
 
-        # TODO ¿Tal vez podríamos reutilizar la Unidad de Trabajo?
+        reserva_dto = db.session.query(ReservaDTO).filter_by(id=str(self.id_reserva)).one_or_none()
+
+        if reserva_dto:
+            if self.estado:
+                reserva_dto.estado = str(self.estado)
+            if self.fecha_actualizacion:
+                reserva_dto.fecha_actualizacion = self.fecha_actualizacion
+        else:
+            # TODO Haga los cambios necesarios para que se consideren los itinerarios, demás entidades y asociaciones
+            reserva = Reserva(
+                id=str(self.id_reserva),
+                id_cliente=str(self.id_cliente),
+                estado=str(self.estado),
+                fecha_creacion=self.fecha_creacion,
+                fecha_actualizacion=self.fecha_actualizacion)
+            reserva._id = self.id_reserva
+            repositorio.agregar(reserva)
+
         db.session.commit()
 
 class ProyeccionReservaHandler(ProyeccionHandler):

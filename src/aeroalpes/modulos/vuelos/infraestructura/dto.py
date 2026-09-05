@@ -45,6 +45,8 @@ class Itinerario(db.Model):
 class Reserva(db.Model):
     __tablename__ = "reservas"
     id = db.Column(db.String(40), primary_key=True)
+    id_cliente = db.Column(db.String(40), nullable=True)
+    estado = db.Column(db.String(40), nullable=True)
     fecha_creacion = db.Column(db.DateTime, nullable=False)
     fecha_actualizacion = db.Column(db.DateTime, nullable=False)
     itinerarios = db.relationship('Itinerario', secondary=reservas_itinerarios, backref='reservas')
