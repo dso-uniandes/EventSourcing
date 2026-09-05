@@ -161,9 +161,12 @@ class MapeadorReserva(Mapeador):
 
     def dto_a_entidad(self, dto: ReservaDTO) -> Reserva:
         reserva = Reserva(dto.id, dto.fecha_creacion, dto.fecha_actualizacion)
+        reserva._id = dto.id
+        reserva.id_cliente = dto.id_cliente
+        reserva.estado = dto.estado
         reserva.itinerarios = list()
 
-        itinerarios_dto: list[ItinerarioDTO] = dto.itinerarios
+        itinerarios_dto: list[ItinerarioDTO] = dto.itinerarios or list()
 
         reserva.itinerarios.extend(self._procesar_itinerario_dto(itinerarios_dto))
         

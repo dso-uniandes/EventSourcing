@@ -1,11 +1,9 @@
 from aeroalpes.seedwork.aplicacion.queries import Query, QueryHandler, QueryResultado
 from aeroalpes.seedwork.aplicacion.queries import ejecutar_query as query
-from aeroalpes.modulos.vuelos.infraestructura.repositorios import RepositorioReservas
 from aeroalpes.modulos.vuelos.dominio.entidades import Reserva
 from dataclasses import dataclass
 from .base import ReservaQueryBaseHandler
 from aeroalpes.modulos.vuelos.aplicacion.mapeadores import MapeadorReserva
-import uuid
 
 @dataclass
 class ObtenerReserva(Query):
@@ -15,7 +13,8 @@ class ObtenerReservaHandler(ReservaQueryBaseHandler):
 
     def handle(self, query: ObtenerReserva) -> QueryResultado:
         vista = self.fabrica_vista.crear_objeto(Reserva)
-        reserva =  self.fabrica_vuelos.crear_objeto(vista.obtener_por(id=query.id)[0], MapeadorReserva())
+        reservas = vista.obtener_por(id=query.id)
+        reserva = self.fabrica_vuelos.crear_objeto(reservas[0], MapeadorReserva()) if reservas else None
         return QueryResultado(resultado=reserva)
 
 @query.register(ObtenerReserva)
