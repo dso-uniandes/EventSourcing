@@ -1,0 +1,4 @@
+websockets==15.0.1
+requests==2.32.4
+pulsar-client==3.7.0
+pulsar-client[avro]==3.7.0
